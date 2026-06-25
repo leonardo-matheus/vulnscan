@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VulnGate — Manual de Uso</title>
+    <style>
+        :root {
+            --primary: #00D4FF;
+            --primary-dark: #0099CC;
+            --secondary: #7C3AED;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --bg-dark: #0F172A;
+            --bg-card: #1E293B;
+            --bg-code: #1A1A2E;
+            --text: #E2E8F0;
+            --text-muted: #94A3B8;
+            --border: #334155;
+            --border-light: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--primary);
+            white-space: pre;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .nav {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+
+        .nav h2 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: block;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin: 24px 0 12px;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin: 16px 0 8px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-header .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .card-header .icon.blue { background: rgba(0, 212, 255, 0.15); }
+        .card-header .icon.purple { background: rgba(124, 58, 237, 0.15); }
+        .card-header .icon.green { background: rgba(16, 185, 129, 0.15); }
+        .card-header .icon.amber { background: rgba(245, 158, 11, 0.15); }
+        .card-header .icon.red { background: rgba(239, 68, 68, 0.15); }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: none;
+            color: var(--text);
+            padding: 0;
+        }
+
+        .cmd-prompt {
+            color: var(--success);
+        }
+
+        .cmd-comment {
+            color: var(--text-muted);
+        }
+
+        .cmd-flag {
+            color: var(--accent);
+        }
+
+        .cmd-string {
+            color: #A5D6FF;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        thead {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(0, 212, 255, 0.03);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .badge-default {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .badge-required {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+        }
+
+        .badge-optional {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .info-box {
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.3);
+            border-left-color: var(--warning);
+        }
+
+        .info-box.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+            border-left-color: var(--success);
+        }
+
+        .info-box strong {
+            color: var(--text);
+        }
+
+        .exit-code-table td:first-child {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .exit-0 { color: var(--success); }
+        .exit-1 { color: var(--error); }
+        .exit-2 { color: var(--warning); }
+
+        .roadmap-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+        }
+
+        .roadmap-item .check {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .roadmap-item .check.done {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .roadmap-item .check.pending {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-muted);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .tech-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            transition: border-color 0.2s;
+        }
+
+        .tech-card:hover {
+            border-color: var(--primary);
+        }
+
+        .tech-card h4 {
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-card pre {
+            margin: 8px 0 0;
+            font-size: 0.8rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .logo { font-size: 8px; }
+            .hero h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.4rem; }
+            .tech-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="logo">██╗   ██╗██╗   ██╗██╗     ███╗   ██╗ ██████╗  █████╗ ████████╗███████╗
+██║   ██║██║   ██║██║     ████╗  ██║██╔════╝ ██╔══██╗╚══██╔══╝██╔════╝
+██║   ██║██║   ██║██║     ██╔██╗ ██║██║  ███╗███████║   ██║   █████╗  
+╚██╗ ██╔╝██║   ██║██║     ██║╚██╗██║██║   ██║██╔══██║   ██║   ██╔══╝  
+ ╚████╔╝ ╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║  ██║   ██║   ███████╗
+  ╚═══╝   ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝</div>
+    <h1>Manual de Uso</h1>
+    <p class="subtitle">CLI de scanner de vulnerabilidades powered by Trivy. Scan de projetos Java, Node.js, React, Vue.js e mais.</p>
+</header>
+
+<div class="container">
+
+    <nav class="nav">
+        <h2>Índice</h2>
+        <ul>
+            <li><a href="#visao-geral">Visão Geral</a></li>
+            <li><a href="#pre-requisitos">Pré-requisitos</a></li>
+            <li><a href="#instalacao">Instalação</a></li>
+            <li><a href="#comandos">Comandos</a></li>
+            <li><a href="#flags">Flags Globais</a></li>
+            <li><a href="#exemplos">Exemplos por Tecnologia</a></li>
+            <li><a href="#github-actions">GitHub Actions</a></li>
+            <li><a href="#exit-codes">Exit Codes</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+        </ul>
+    </nav>
+
+    <!-- VISÃO GERAL -->
+    <section id="visao-geral">
+        <h2>Visão Geral</h2>
+        <div class="card">
+            <p><strong>VulnGate</strong> é uma ferramenta CLI que utiliza o <strong>Trivy</strong> como motor principal para escanear vulnerabilidades, segredos e misconfigurations em projetos.</p>
+            <p>Stacs suportados:</p>
+            <ul style="color: var(--text-muted); padding-left: 20px; margin-top: 8px;">
+                <li><strong>Java</strong> — Maven, Gradle, JAR, WAR, EAR, Java 8, 11, 21, 25</li>
+                <li><strong>Node.js</strong> — npm, yarn</li>
+                <li><strong>React / ReactJS</strong></li>
+                <li><strong>Vue.js</strong></li>
+                <li><strong>Filesystem</strong> — diretórios e repositórios locais</li>
+                <li><strong>Git repositories</strong> — clona e escaneia automaticamente</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- PRÉ-REQUISITOS -->
+    <section id="pre-requisitos">
+        <h2>Pré-requisitos</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon blue">⚙</div>
+                <h3>Go 1.22+</h3>
+            </div>
+            <p>Necessário apenas para compilar a partir do código-fonte.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon purple">🔍</div>
+                <h3>Trivy</h3>
+            </div>
+            <p>O Trivy deve estar instalado e disponível no <code>PATH</code>. O VulnGate verifica automaticamente a presença do Trivy antes de cada scan.</p>
+        </div>
+    </section>
+
+    <!-- INSTALAÇÃO -->
+    <section id="instalacao">
+        <h2>Instalação</h2>
+
+        <h3>Instalando o Trivy</h3>
+
+        <pre><code><span class="cmd-comment"># Linux (Debian/Ubuntu)</span>
+<span class="cmd-prompt">$</span> sudo apt-get update
+<span class="cmd-prompt">$</span> sudo apt-get install -y trivy
+
+<span class="cmd-comment"># Linux (RHEL/CentOS)</span>
+<span class="cmd-prompt">$</span> sudo yum install trivy
+
+<span class="cmd-comment"># macOS</span>
+<span class="cmd-prompt">$</span> brew install trivy
+
+<span class="cmd-comment"># Windows (Chocolatey)</span>
+<span class="cmd-prompt">$</span> choco install trivy
+
+<span class="cmd-comment"># Go install</span>
+<span class="cmd-prompt">$</span> go install github.com/aquasecurity/trivy/cmd/trivy@latest</code></pre>
+
+        <h3>Compilando o VulnGate</h3>
+
+        <pre><code><span class="cmd-comment"># Clonar o repositório</span>
+<span class="cmd-prompt">$</span> git clone https://github.com/leonardo-matheus/vulnscan.git
+<span class="cmd-prompt">$</span> cd vulnscan
+
+<span class="cmd-comment"># Compilar</span>
+<span class="cmd-prompt">$</span> go build -o vulngate .
+
+<span class="cmd-comment"># Ou instalar localmente</span>
+<span class="cmd-prompt">$</span> go install .</code></pre>
+
+        <div class="info-box success">
+            <strong>Verificação:</strong> Execute <code>vulngate version</code> para confirmar que tanto o VulnGate quanto o Trivy estão instalados corretamente.
+        </div>
+    </section>
+
+    <!-- COMANDOS -->
+    <section id="comandos">
+        <h2>Comandos</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon blue">📂</div>
+                <h3><code>vulngate scan fs [path]</code></h3>
+            </div>
+            <p>Escaneia um diretório do filesystem local.</p>
+            <pre><code><span class="cmd-prompt">$</span> vulngate scan fs .
+<span class="cmd-prompt">$</span> vulngate scan fs /caminho/para/projeto
+<span class="cmd-prompt">$</span> vulngate scan fs ./meu-app-java <span class="cmd-flag">--severity</span> HIGH,CRITICAL
+<span class="cmd-prompt">$</span> vulngate scan fs ./meu-app-node <span class="cmd-flag">--include-dev-deps</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--format</span> sarif <span class="cmd-flag">--output</span> results.sarif</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon purple">📦</div>
+                <h3><code>vulngate scan repo [git-url]</code></h3>
+            </div>
+            <p>Clona um repositório Git temporariamente e escaneia-o. O repositório é removido automaticamente ao final.</p>
+            <pre><code><span class="cmd-prompt">$</span> vulngate scan repo https://github.com/org/repo
+<span class="cmd-prompt">$</span> vulngate scan repo git@github.com:org/repo.git
+<span class="cmd-prompt">$</span> vulngate scan repo https://github.com/org/repo <span class="cmd-flag">--severity</span> HIGH,CRITICAL
+<span class="cmd-prompt">$</span> vulngate scan repo https://github.com/org/repo <span class="cmd-flag">--format</span> sarif <span class="cmd-flag">--output</span> report.sarif</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="icon green">ℹ️</div>
+                <h3><code>vulngate version</code></h3>
+            </div>
+            <p>Exibe a versão do VulnGate e do Trivy instalado.</p>
+            <pre><code><span class="cmd-prompt">$</span> vulngate version</code></pre>
+        </div>
+    </section>
+
+    <!-- FLAGS -->
+    <section id="flags">
+        <h2>Flags Globais</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Padrão</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>--severity</code></td>
+                    <td><span class="badge badge-default">HIGH,CRITICAL</span></td>
+                    <td>Níveis de severidade para reportar (<code>LOW</code>, <code>MEDIUM</code>, <code>HIGH</code>, <code>CRITICAL</code>)</td>
+                </tr>
+                <tr>
+                    <td><code>--format</code></td>
+                    <td><span class="badge badge-default">table</span></td>
+                    <td>Formato de saída (<code>table</code>, <code>json</code>, <code>sarif</code>)</td>
+                </tr>
+                <tr>
+                    <td><code>--output</code></td>
+                    <td><span class="badge badge-optional">—</span></td>
+                    <td>Caminho do arquivo de saída</td>
+                </tr>
+                <tr>
+                    <td><code>--exit-code</code></td>
+                    <td><span class="badge badge-default">1</span></td>
+                    <td>Exit code quando vulnerabilidades são encontradas</td>
+                </tr>
+                <tr>
+                    <td><code>--ignore-unfixed</code></td>
+                    <td><span class="badge badge-default">false</span></td>
+                    <td>Ignorar vulnerabilidades sem correção disponível</td>
+                </tr>
+                <tr>
+                    <td><code>--include-dev-deps</code></td>
+                    <td><span class="badge badge-default">false</span></td>
+                    <td>Incluir dependências de desenvolvimento (Node.js/React/Vue)</td>
+                </tr>
+                <tr>
+                    <td><code>--scanners</code></td>
+                    <td><span class="badge badge-default">vuln,secret,misconfig</span></td>
+                    <td>Tipos de scanner (<code>vuln</code>, <code>secret</code>, <code>misconfig</code>)</td>
+                </tr>
+                <tr>
+                    <td><code>--timeout</code></td>
+                    <td><span class="badge badge-default">10m</span></td>
+                    <td>Timeout do scan</td>
+                </tr>
+                <tr>
+                    <td><code>--debug</code></td>
+                    <td><span class="badge badge-default">false</span></td>
+                    <td>Habilitar saída de debug (mostra comando Trivy executado)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Exemplos com Flags</h3>
+
+        <pre><code><span class="cmd-comment"># Scan com todas as severidades</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--severity</span> LOW,MEDIUM,HIGH,CRITICAL
+
+<span class="cmd-comment"># Scan apenas de vulnerabilidades (sem secrets e misconfig)</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--scanners</span> vuln
+
+<span class="cmd-comment"># Export para JSON</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--format</span> json <span class="cmd-flag">--output</span> report.json
+
+<span class="cmd-comment"># Export para SARIF (integração com GitHub Security)</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--format</span> sarif <span class="cmd-flag">--output</span> trivy-results.sarif
+
+<span class="cmd-comment"># Ignorar vulnerabilidades sem fix</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--ignore-unfixed</span>
+
+<span class="cmd-comment"># Modo debug</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--debug</span>
+
+<span class="cmd-comment"># Timeout personalizado</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--timeout</span> 30m</code></pre>
+    </section>
+
+    <!-- EXEMPLOS POR TECNOLOGIA -->
+    <section id="exemplos">
+        <h2>Exemplos por Tecnologia</h2>
+
+        <div class="tech-grid">
+
+            <div class="tech-card">
+                <h4>☕ Java (Maven)</h4>
+                <pre><code><span class="cmd-comment"># Scan projeto Maven</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-java-app
+
+<span class="cmd-comment"># Apenas vulnerabilidades</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-java-app \
+  <span class="cmd-flag">--scanners</span> vuln</code></pre>
+            </div>
+
+            <div class="tech-card">
+                <h4>🐘 Java (Gradle)</h4>
+                <pre><code><span class="cmd-comment"># Scan projeto Gradle</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-gradle-app
+
+<span class="cmd-comment"># Scan JAR específico</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./target/app.jar</code></pre>
+            </div>
+
+            <div class="tech-card">
+                <h4>📦 Java (WAR/EAR)</h4>
+                <pre><code><span class="cmd-comment"># Scan WAR</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./target/app.war
+
+<span class="cmd-comment"># Scan EAR</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./target/app.ear</code></pre>
+            </div>
+
+            <div class="tech-card">
+                <h4>🟢 Node.js</h4>
+                <pre><code><span class="cmd-comment"># Com dev dependencies</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-node-app \
+  <span class="cmd-flag">--include-dev-deps</span>
+
+<span class="cmd-comment"># Sem dev dependencies</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-node-app</code></pre>
+            </div>
+
+            <div class="tech-card">
+                <h4>⚛️ React</h4>
+                <pre><code><span class="cmd-comment"># Scan React com dev deps</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-react-app \
+  <span class="cmd-flag">--include-dev-deps</span>
+
+<span class="cmd-comment"># SARIF para GitHub</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-react-app \
+  <span class="cmd-flag">--include-dev-deps</span> \
+  <span class="cmd-flag">--format</span> sarif \
+  <span class="cmd-flag">--output</span> results.sarif</code></pre>
+            </div>
+
+            <div class="tech-card">
+                <h4>💚 Vue.js</h4>
+                <pre><code><span class="cmd-comment"># Scan Vue.js com dev deps</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-vue-app \
+  <span class="cmd-flag">--include-dev-deps</span>
+
+<span class="cmd-comment"># Com severidade específica</span>
+<span class="cmd-prompt">$</span> vulngate scan fs ./my-vue-app \
+  <span class="cmd-flag">--include-dev-deps</span> \
+  <span class="cmd-flag">--severity</span> HIGH,CRITICAL</code></pre>
+            </div>
+
+        </div>
+
+        <div class="info-box">
+            <strong>Dica:</strong> A flag <code>--include-dev-deps</code> é especialmente importante para projetos Node.js, React e Vue.js, pois muitas vulnerabilidades estão em dependências de desenvolvimento (ex: Webpack, Babel, ESLint).
+        </div>
+    </section>
+
+    <!-- GITHUB ACTIONS -->
+    <section id="github-actions">
+        <h2>Uso em GitHub Actions</h2>
+
+        <h3>Workflow Completo</h3>
+
+        <pre><code><span class="cmd-string">name: Security Scan</span>
+
+<span class="cmd-string">on:</span>
+  <span class="cmd-string">push:</span>
+    <span class="cmd-string">branches: [main]</span>
+  <span class="cmd-string">pull_request:</span>
+    <span class="cmd-string">branches: [main]</span>
+
+<span class="cmd-string">jobs:</span>
+  <span class="cmd-string">scan:</span>
+    <span class="cmd-string">runs-on: ubuntu-latest</span>
+    <span class="cmd-string">steps:</span>
+      - <span class="cmd-string">uses: actions/checkout@v4</span>
+
+      - <span class="cmd-string">name: Set up Go</span>
+        <span class="cmd-string">uses: actions/setup-go@v5</span>
+        <span class="cmd-string">with:</span>
+          <span class="cmd-string">go-version: '1.23'</span>
+
+      - <span class="cmd-string">name: Install Trivy</span>
+        <span class="cmd-string">run: |</span>
+          <span class="cmd-prompt">sudo apt-get update</span>
+          <span class="cmd-prompt">sudo apt-get install -y trivy</span>
+
+      - <span class="cmd-string">name: Build VulnGate</span>
+        <span class="cmd-string">run: go build -o vulngate .</span>
+
+      - <span class="cmd-string">name: Run scan</span>
+        <span class="cmd-string">run: |</span>
+          <span class="cmd-prompt">./vulngate scan fs . --format sarif --output trivy-results.sarif</span>
+
+      - <span class="cmd-string">name: Upload SARIF</span>
+        <span class="cmd-string">uses: github/codeql-action/upload-sarif@v3</span>
+        <span class="cmd-string">if: always()</span>
+        <span class="cmd-string">with:</span>
+          <span class="cmd-string">sarif_file: trivy-results.sarif</span></code></pre>
+
+        <h3>SARIF Upload para GitHub Security</h3>
+
+        <pre><code><span class="cmd-string">      - name: Run Trivy</span>
+        <span class="cmd-string">run: |</span>
+          <span class="cmd-prompt">./vulngate scan fs . --format sarif --output results.sarif --severity HIGH,CRITICAL</span>
+
+<span class="cmd-string">      - name: Upload to GitHub Security</span>
+        <span class="cmd-string">uses: github/codeql-action/upload-sarif@v3</span>
+        <span class="cmd-string">if: always()</span>
+        <span class="cmd-string">with:</span>
+          <span class="cmd-string">sarif_file: results.sarif</span></code></pre>
+
+        <div class="info-box warning">
+            <strong>Importante:</strong> Use <code>if: always()</code> no step de upload para garantir que o SARIF seja enviado mesmo quando o scan encontra vulnerabilidades (exit code != 0).
+        </div>
+    </section>
+
+    <!-- EXIT CODES -->
+    <section id="exit-codes">
+        <h2>Exit Codes</h2>
+
+        <table class="exit-code-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="exit-0">0</td>
+                    <td>Nenhuma vulnerabilidade encontrada</td>
+                </tr>
+                <tr>
+                    <td class="exit-1">1</td>
+                    <td>Vulnerabilidades encontradas (padrão)</td>
+                </tr>
+                <tr>
+                    <td class="exit-2">2</td>
+                    <td>Erro de execução do Trivy</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Controle via Flag</h3>
+
+        <pre><code><span class="cmd-comment"># Falhar no pipeline se encontrar HIGH/CRITICAL</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--exit-code</span> 1
+
+<span class="cmd-comment"># Sempre sucesso (apenas reportar)</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--exit-code</span> 0
+
+<span class="cmd-comment"># Exit code customizado</span>
+<span class="cmd-prompt">$</span> vulngate scan fs . <span class="cmd-flag">--exit-code</span> 2</code></pre>
+
+        <div class="info-box success">
+            <strong>CI/CD:</strong> O exit code é compatível com pipelines de CI/CD. Se <code>--exit-code 1</code> e vulnerabilidades forem encontradas, o pipeline falha automaticamente.
+        </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+        <h2>Roadmap</h2>
+
+        <div class="roadmap-item">
+            <div class="check done">✓</div>
+            <span>CLI funcional com Trivy via <code>os/exec</code></span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check done">✓</div>
+            <span>Suporte a filesystem e Git repositories</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check done">✓</div>
+            <span>Export para SARIF e JSON</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check done">✓</div>
+            <span>Interface CLI profissional com cores</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check done">✓</div>
+            <span>CI/CD com GitHub Actions</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Suporte a scan de Docker images</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Dockerfile e imagem própria da CLI</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Arquivo de configuração <code>.vulngate.yaml</code></span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Política de vulnerabilidades por severidade</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Lista de ignores com justificativa e expiração</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Geração de relatório Markdown</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Integração com Slack/Teams</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>API HTTP</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Dashboard web</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Histórico de scans</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Integração com Dependency-Track</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Geração de SBOM com Syft</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Scan complementar com OSV-Scanner</span>
+        </div>
+        <div class="roadmap-item">
+            <div class="check pending">○</div>
+            <span>Integração direta via SDK Go (substituir <code>os/exec</code>)</span>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>VulnGate v0.1.0 — Vulnerability Scanner powered by Trivy</p>
+    <p><a href="https://github.com/leonardo-matheus/vulnscan">github.com/leonardo-matheus/vulnscan</a></p>
+</footer>
+
+</body>
+</html>
