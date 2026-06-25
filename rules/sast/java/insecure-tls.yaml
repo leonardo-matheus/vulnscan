@@ -12,29 +12,13 @@ rules:
         - id: "CWE-295"
           name: "Improper Certificate Validation"
 
-  - id: java-insecure-tls-trustall
+  - id: java-insecure-trust-all
     pattern: |
-      new X509TrustManager() { ... checkServerTrusted(...); ... }
+      TrustManager[] $TM = new TrustManager[]{ new X509TrustManager() { ... } };
     message: >
       Insecure TLS: TrustManager does not validate certificates.
     languages: [java]
     severity: ERROR
-    metadata:
-      category: security
-      cwe:
-        - id: "CWE-295"
-          name: "Improper Certificate Validation"
-
-  - id: java-insecure-tls-sslcontext
-    patterns:
-      - pattern: |
-          SSLContext.getInstance("TLS")
-      - pattern-inside: |
-          TrustManager[] $TM = new TrustManager[]{ new X509TrustManager() { ... } };
-    message: >
-      Insecure TLS: SSLContext initialized with custom TrustManager that may accept all certificates.
-    languages: [java]
-    severity: WARNING
     metadata:
       category: security
       cwe:

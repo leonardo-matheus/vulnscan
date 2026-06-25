@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -73,10 +74,17 @@ func runSAST(target string) error {
 
 	failOn := sast.ParseSeverity(sastCfg.FailOn)
 
+	rulesPath := sastCfg.RulesPath
+	if rulesPath != "" {
+		if absPath, err := filepath.Abs(rulesPath); err == nil {
+			rulesPath = absPath
+		}
+	}
+
 	req := sast.ScanRequest{
 		TargetPath:     target,
 		Engine:         sastCfg.Engine,
-		RulesPath:      sastCfg.RulesPath,
+		RulesPath:      rulesPath,
 		Format:         sastCfg.Format,
 		OutputPath:     sastCfg.OutputPath,
 		FailOn:         failOn,

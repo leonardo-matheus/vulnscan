@@ -3,7 +3,10 @@ package semgrep
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/leonardo-matheus/vulnscan/internal/sast"
@@ -20,15 +23,28 @@ func (e *Engine) Name() string {
 }
 
 func (e *Engine) CheckInstalled() error {
-	_, err := exec.LookPath("semgrep")
-	if err != nil {
-		return fmt.Errorf("semgrep is not installed or not found in PATH\n\n" +
-			"Install Semgrep:\n" +
-			"  pip install semgrep\n" +
-			"  brew install semgrep (macOS)\n\n" +
-			"Documentation: https://semgrep.dev")
+	if _, err := exec.LookPath("semgrep"); err == nil {
+		return nil
 	}
-	return nil
+
+	home, _ := os.UserHomeDir()
+	localBin := filepath.Join(home, ".vulngate", "bin")
+	binName := "semgrep"
+	if runtime.GOOS == "windows" {
+		binName = "semgrep.exe"
+	}
+
+	if _, err := os.Stat(filepath.Join(localBin, binName)); err == nil {
+		currentPath := os.Getenv("PATH")
+		os.Setenv("PATH", localBin+string(os.PathListSeparator)+currentPath)
+		return nil
+	}
+
+	return fmt.Errorf("semgrep is not installed or not found in PATH\n\n" +
+		"Install Semgrep:\n" +
+		"  pip install semgrep\n" +
+		"  brew install semgrep (macOS)\n\n" +
+		"Documentation: https://semgrep.dev")
 }
 
 func (e *Engine) BuildArgs(req sast.ScanRequest) []string {

@@ -5,7 +5,7 @@ rules:
     message: >
       XSS risk: dangerouslySetInnerHTML bypasses React's XSS protection.
       Sanitize input before using dangerouslySetInnerHTML.
-    languages: [javascript, typescript, jsx, tsx]
+    languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: security
@@ -19,7 +19,7 @@ rules:
     message: >
       XSS risk: dangerouslySetInnerHTML with dynamic value.
       Sanitize $VAR before rendering.
-    languages: [jsx, tsx]
+    languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: security
