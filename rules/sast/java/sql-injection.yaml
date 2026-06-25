@@ -1,0 +1,59 @@
+rules:
+  - id: java-sql-injection-concat
+    pattern: |
+      $STMT.executeQuery("..." + $VAR)
+    message: >
+      SQL Injection detected: string concatenation in executeQuery.
+      Use parameterized queries instead.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: java-sql-injection-jdbc
+    pattern: |
+      $TEMPLATE.query("..." + $VAR, ...)
+    message: >
+      SQL Injection detected: string concatenation in JDBC query.
+      Use parameterized queries instead.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: java-sql-injection-jpa
+    pattern: |
+      $EM.createQuery("..." + $VAR)
+    message: >
+      SQL Injection detected: string concatenation in JPA query.
+      Use parameterized queries instead.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: java-sql-injection-string-builder
+    patterns:
+      - pattern: |
+          $SB.append($VAR)
+      - pattern: |
+          $CONN.prepareStatement($SB.toString())
+    message: >
+      SQL Injection detected: dynamic query built with StringBuilder.
+      Use parameterized queries instead.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"

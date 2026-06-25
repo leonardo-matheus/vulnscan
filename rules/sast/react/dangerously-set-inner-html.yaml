@@ -1,0 +1,28 @@
+rules:
+  - id: react-dangerously-set-inner-html
+    pattern: |
+      <$TAG dangerouslySetInnerHTML=... />
+    message: >
+      XSS risk: dangerouslySetInnerHTML bypasses React's XSS protection.
+      Sanitize input before using dangerouslySetInnerHTML.
+    languages: [javascript, typescript, jsx, tsx]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: react-dangerously-set-inner-html-jsx
+    pattern: |
+      <$TAG dangerouslySetInnerHTML={{ __html: $VAR }} />
+    message: >
+      XSS risk: dangerouslySetInnerHTML with dynamic value.
+      Sanitize $VAR before rendering.
+    languages: [jsx, tsx]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"

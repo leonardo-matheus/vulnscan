@@ -1,0 +1,42 @@
+rules:
+  - id: js-sql-injection-concat
+    pattern: |
+      $DB.query("..." + $VAR, ...)
+    message: >
+      SQL Injection detected: string concatenation in database query.
+      Use parameterized queries or prepared statements.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: js-sql-injection-template
+    pattern: |
+      $DB.query(`...${...}...`, ...)
+    message: >
+      SQL Injection detected: template literal in database query.
+      Use parameterized queries or prepared statements.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: js-sql-injection-execute
+    pattern: |
+      $CONN.execute("..." + $VAR)
+    message: >
+      SQL Injection detected: string concatenation in execute().
+      Use parameterized queries.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"

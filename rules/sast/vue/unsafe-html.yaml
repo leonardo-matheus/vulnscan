@@ -1,0 +1,26 @@
+rules:
+  - id: vue-unsafe-html
+    pattern: |
+      v-html="..."
+    message: >
+      XSS risk: v-html directive renders raw HTML. Sanitize input before using v-html.
+    languages: [html, vue]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: vue-unsafe-html-dynamic
+    pattern: |
+      v-html="$VAR"
+    message: >
+      XSS risk: v-html with dynamic value. Sanitize input before rendering.
+    languages: [html, vue]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"

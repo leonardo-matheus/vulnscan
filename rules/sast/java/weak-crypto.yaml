@@ -1,0 +1,65 @@
+rules:
+  - id: java-weak-crypto-md5
+    pattern: |
+      MessageDigest.getInstance("MD5")
+    message: >
+      Weak cryptography: MD5 is cryptographically broken. Use SHA-256 or stronger.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: java-weak-crypto-sha1
+    pattern: |
+      MessageDigest.getInstance("SHA-1")
+    message: >
+      Weak cryptography: SHA-1 is deprecated. Use SHA-256 or stronger.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: java-weak-crypto-sha1-variant
+    pattern: |
+      MessageDigest.getInstance("SHA1")
+    message: >
+      Weak cryptography: SHA1 is deprecated. Use SHA-256 or stronger.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: java-weak-crypto-des
+    pattern: |
+      Cipher.getInstance("DES")
+    message: >
+      Weak cryptography: DES is insecure. Use AES-256 or stronger.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-327"
+          name: "Use of a Broken or Risky Cryptographic Algorithm"
+
+  - id: java-weak-crypto-rc4
+    pattern: |
+      Cipher.getInstance("RC4")
+    message: >
+      Weak cryptography: RC4 is insecure. Use AES-GCM or ChaCha20.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-327"
+          name: "Use of a Broken or Risky Cryptographic Algorithm"

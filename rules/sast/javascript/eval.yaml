@@ -1,0 +1,52 @@
+rules:
+  - id: js-eval
+    pattern: |
+      eval(...)
+    message: >
+      Dangerous use of eval(). Avoid eval() with dynamic input.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: js-new-function
+    pattern: |
+      new Function(...)
+    message: >
+      Dangerous use of new Function(). Avoid constructing functions from strings.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: js-settimeout-string
+    pattern: |
+      setTimeout("...", ...)
+    message: >
+      Avoid passing strings to setTimeout(). Use function references instead.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: js-setinterval-string
+    pattern: |
+      setInterval("...", ...)
+    message: >
+      Avoid passing strings to setInterval(). Use function references instead.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
