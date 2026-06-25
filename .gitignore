@@ -1,0 +1,32 @@
+# Binaries
+vulngate
+vulngate.exe
+vulngate-*
+vg.bat
+vg.ps1
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
