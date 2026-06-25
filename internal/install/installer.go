@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	trivyRepo    = "aquasecurity/trivy"
-	releasesBase = "https://github.com"
+	trivyRepo       = "aquasecurity/trivy"
+	opengrepRepo    = "opengrep/opengrep"
+	releasesBase    = "https://github.com"
 )
 
 type Installer struct {
@@ -50,33 +51,33 @@ func (i *Installer) Install() error {
 
 	log.Info("Platform: %s/%s", platform, arch)
 
-	downloadURL, filename, err := i.getDownloadURL(platform, arch)
+	trivyURL, trivyFile, err := i.getTrivyDownloadURL(platform, arch)
 	if err != nil {
 		return err
 	}
 
-	log.Info("Download URL: %s", downloadURL)
-
-	zipPath := filepath.Join(i.InstallDir, filename)
+	trivyZip := filepath.Join(i.InstallDir, trivyFile)
 
 	log.Info("Downloading Trivy...")
-	if err := i.download(downloadURL, zipPath); err != nil {
+	if err := i.download(trivyURL, trivyZip); err != nil {
 		return err
 	}
 
-	log.Info("Extracting...")
-	if err := i.extract(zipPath); err != nil {
+	log.Info("Extracting Trivy...")
+	if err := i.extract(trivyZip); err != nil {
 		return err
 	}
-
-	os.Remove(zipPath)
+	os.Remove(trivyZip)
 
 	trivyPath := i.getTrivyPath()
 	if _, err := os.Stat(trivyPath); os.IsNotExist(err) {
 		return fmt.Errorf("trivy binary not found after extraction at %s", trivyPath)
 	}
+	log.Info("Trivy installed: %s", trivyPath)
 
-	log.Info("Trivy installed successfully at: %s", trivyPath)
+	if err := i.installOpenGrep(platform, arch); err != nil {
+		log.Warn("Could not install OpenGrep: %v", err)
+	}
 
 	if err := i.addToPath(); err != nil {
 		log.Warn("Could not auto-add to PATH: %v", err)
@@ -188,10 +189,10 @@ func copyFile(src, dst string) error {
 	return os.Chmod(dst, info.Mode())
 }
 
-func (i *Installer) getDownloadURL(platform, arch string) (string, string, error) {
-	latestVersion, err := i.getLatestVersion()
+func (i *Installer) getTrivyDownloadURL(platform, arch string) (string, string, error) {
+	latestVersion, err := i.getLatestTrivyVersion()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get latest version: %w", err)
+		return "", "", fmt.Errorf("failed to get latest trivy version: %w", err)
 	}
 
 	versionNum := strings.TrimPrefix(latestVersion, "v")
@@ -227,7 +228,7 @@ func (i *Installer) getDownloadURL(platform, arch string) (string, string, error
 	return url, filename, nil
 }
 
-func (i *Installer) getLatestVersion() (string, error) {
+func (i *Installer) getLatestTrivyVersion() (string, error) {
 	url := fmt.Sprintf("%s/%s/releases/latest", releasesBase, trivyRepo)
 
 	client := &http.Client{
@@ -438,4 +439,109 @@ func (i *Installer) addToPathUnix(rcFiles ...string) error {
 	os.Setenv("PATH", i.InstallDir+":"+currentPath)
 
 	return nil
+}
+
+func (i *Installer) installOpenGrep(platform, arch string) error {
+	downloadURL, filename, err := i.getOpenGrepDownloadURL(platform, arch)
+	if err != nil {
+		return err
+	}
+
+	log.Info("OpenGrep URL: %s", downloadURL)
+
+	if platform == "windows" {
+		exePath := filepath.Join(i.InstallDir, filename)
+
+		log.Info("Downloading OpenGrep...")
+		if err := i.download(downloadURL, exePath); err != nil {
+			return err
+		}
+
+		finalPath := filepath.Join(i.InstallDir, "opengrep.exe")
+		if exePath != finalPath {
+			os.Remove(finalPath)
+			if err := os.Rename(exePath, finalPath); err != nil {
+				return fmt.Errorf("failed to rename opengrep: %w", err)
+			}
+		}
+
+		log.Info("OpenGrep installed: %s", finalPath)
+	} else {
+		archivePath := filepath.Join(i.InstallDir, filename)
+
+		log.Info("Downloading OpenGrep...")
+		if err := i.download(downloadURL, archivePath); err != nil {
+			return err
+		}
+
+		if strings.HasSuffix(filename, ".tar.gz") {
+			log.Info("Extracting OpenGrep...")
+			cmd := exec.Command("tar", "-xzf", archivePath, "-C", i.InstallDir)
+			if err := cmd.Run(); err != nil {
+				os.Remove(archivePath)
+				return fmt.Errorf("failed to extract opengrep: %w", err)
+			}
+		} else {
+			destPath := filepath.Join(i.InstallDir, "opengrep")
+			if err := os.Rename(archivePath, destPath); err != nil {
+				os.Remove(archivePath)
+				return fmt.Errorf("failed to install opengrep: %w", err)
+			}
+			os.Chmod(destPath, 0755)
+		}
+
+		os.Remove(archivePath)
+		log.Info("OpenGrep installed in: %s", i.InstallDir)
+	}
+
+	return nil
+}
+
+func (i *Installer) getOpenGrepDownloadURL(platform, arch string) (string, string, error) {
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Get(fmt.Sprintf("%s/%s/releases/latest", releasesBase, opengrepRepo))
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+
+	version := "v1.23.0"
+	if resp.StatusCode == http.StatusFound {
+		location := resp.Header.Get("Location")
+		parts := strings.Split(location, "/")
+		if len(parts) > 0 {
+			version = parts[len(parts)-1]
+		}
+	}
+
+	var filename string
+
+	switch platform {
+	case "windows":
+		filename = "opengrep_windows_x86.exe"
+	case "darwin":
+		if arch == "arm64" {
+			filename = "opengrep_osx_arm64"
+		} else {
+			filename = "opengrep_osx_x86"
+		}
+	case "linux":
+		if arch == "arm64" {
+			filename = "opengrep_manylinux_aarch64"
+		} else {
+			filename = "opengrep_manylinux_x86"
+		}
+	default:
+		return "", "", fmt.Errorf("unsupported platform for opengrep: %s", platform)
+	}
+
+	url := fmt.Sprintf("%s/%s/releases/download/%s/%s", releasesBase, opengrepRepo, version, filename)
+
+	return url, filename, nil
 }
