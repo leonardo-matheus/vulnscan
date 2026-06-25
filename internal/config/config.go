@@ -48,6 +48,8 @@ type ScanOptions struct {
 	Timeout        string
 	Debug          bool
 	EnableSAST     bool
+	SkipDefaultDirs bool
+	ExtraSkipDirs  string
 }
 
 func DefaultScanOptions() ScanOptions {

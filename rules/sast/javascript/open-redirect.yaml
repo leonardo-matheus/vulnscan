@@ -1,0 +1,56 @@
+rules:
+  - id: js-open-redirect-location-assign
+    pattern: |
+      window.location.assign($VAR)
+    message: >
+      Open Redirect: user-controlled URL passed to window.location.assign().
+      Validate and whitelist redirect destinations before redirecting.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"
+
+  - id: js-open-redirect-location-href
+    pattern: |
+      window.location.href = $VAR
+    message: >
+      Open Redirect: user-controlled value assigned to window.location.href.
+      Validate and whitelist redirect destinations before redirecting.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"
+
+  - id: js-open-redirect-location-replace
+    pattern: |
+      window.location.replace($VAR)
+    message: >
+      Open Redirect: user-controlled URL passed to window.location.replace().
+      Validate and whitelist redirect destinations before redirecting.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"
+
+  - id: js-open-redirect-express-res-redirect
+    pattern: |
+      $RES.redirect($VAR)
+    message: >
+      Open Redirect: user-controlled value passed to Express res.redirect().
+      Validate and whitelist redirect destinations before calling res.redirect().
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"

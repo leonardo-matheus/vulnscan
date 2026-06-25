@@ -2,9 +2,24 @@ package trivy
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/leonardo-matheus/vulnscan/internal/config"
 )
+
+var defaultSkipDirs = []string{
+	"node_modules",
+	"vendor",
+	"target",
+	"build",
+	".git",
+	".svn",
+	".hg",
+	"dist",
+	"__pycache__",
+	".venv",
+	"venv",
+}
 
 func BuildFSArgs(opts config.ScanOptions) []string {
 	args := []string{"fs"}
@@ -32,6 +47,21 @@ func BuildFSArgs(opts config.ScanOptions) []string {
 
 	if opts.Debug {
 		args = append(args, "--debug")
+	}
+
+	if !opts.SkipDefaultDirs {
+		for _, d := range defaultSkipDirs {
+			args = append(args, "--skip-dirs", d)
+		}
+	}
+
+	if opts.ExtraSkipDirs != "" {
+		for _, d := range strings.Split(opts.ExtraSkipDirs, ",") {
+			d = strings.TrimSpace(d)
+			if d != "" {
+				args = append(args, "--skip-dirs", d)
+			}
+		}
 	}
 
 	args = append(args, opts.Target)

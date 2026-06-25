@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\leonardo.silva\\\\Desktop\\\\PROJETOS\\\\trivy\\\\rules\\\\sast\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\leonardo.silva\\\\Desktop\\\\PROJETOS\\\\trivy\\\\rules\\\\sast\" -Recurse -Directory)"
+    ]
+  }
+}

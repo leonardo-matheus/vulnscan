@@ -1,0 +1,70 @@
+rules:
+  - id: java-xss-servlet-writer-print
+    pattern: |
+      $RESPONSE.getWriter().print($VAR)
+    message: >
+      XSS: user input written directly to HTTP response without encoding.
+      Use OWASP Java Encoder: Encode.forHtml($VAR) before writing to the response.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: java-xss-servlet-writer-println
+    pattern: |
+      $RESPONSE.getWriter().println($VAR)
+    message: >
+      XSS: user input written directly to HTTP response without encoding.
+      Use OWASP Java Encoder: Encode.forHtml($VAR) before writing to the response.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: java-xss-servlet-writer-write
+    pattern: |
+      $RESPONSE.getWriter().write($VAR)
+    message: >
+      XSS: user input written directly to HTTP response without encoding.
+      Use OWASP Java Encoder: Encode.forHtml($VAR) before writing to the response.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: java-xss-print-writer-printf
+    pattern: |
+      $PW.printf("...", $VAR)
+    message: >
+      XSS: user input passed to PrintWriter.printf() may produce unsanitized HTML output.
+      Encode all dynamic values with Encode.forHtml() or HtmlUtils.htmlEscape().
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: java-xss-spring-return-html-concat
+    pattern: |
+      return "..." + $VAR
+    message: >
+      XSS: user-controlled value concatenated into response string.
+      Encode output with Encode.forHtml() or use a templating engine with auto-escaping.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"

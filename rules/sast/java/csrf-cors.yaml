@@ -1,0 +1,42 @@
+rules:
+  - id: java-csrf-spring-disabled
+    pattern: |
+      .csrf().disable()
+    message: >
+      CSRF Protection Disabled: Spring Security CSRF protection has been explicitly disabled.
+      Only disable CSRF for fully stateless APIs authenticated exclusively with tokens (e.g. JWT).
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-352"
+          name: "Cross-Site Request Forgery (CSRF)"
+
+  - id: java-cors-wildcard-annotation
+    pattern: |
+      @CrossOrigin(origins = "*")
+    message: >
+      Overly Permissive CORS: wildcard origin allows any domain to send credentialed requests.
+      Specify explicit trusted origins instead of using a wildcard.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-942"
+          name: "Overly Permissive Cross-domain Whitelist"
+
+  - id: java-cors-wildcard-config
+    pattern: |
+      $CONFIG.allowedOrigins("*")
+    message: >
+      Overly Permissive CORS: wildcard origin allows any domain to send credentialed requests.
+      Specify explicit trusted origins instead of using a wildcard.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-942"
+          name: "Overly Permissive Cross-domain Whitelist"

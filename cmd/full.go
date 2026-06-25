@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/leonardo-matheus/vulnscan/internal/config"
 	"github.com/leonardo-matheus/vulnscan/internal/log"
-	"github.com/leonardo-matheus/vulnscan/internal/output"
 	"github.com/leonardo-matheus/vulnscan/internal/sast"
 	"github.com/leonardo-matheus/vulnscan/internal/sast/opengrep"
 	"github.com/leonardo-matheus/vulnscan/internal/sast/semgrep"
@@ -37,7 +38,6 @@ Examples:
   vg full                         Scan current directory
   vg full .                       Scan current directory
   vg full ./my-project            Scan specific directory
-  vg full fs ./my-project         Scan with explicit fs subcommand
   vg full --engine semgrep        Use Semgrep instead of OpenGrep
   vg full --fail-on WARNING       Fail on WARNING severity`,
 	Args: cobra.MaximumNArgs(1),
@@ -74,13 +74,6 @@ func init() {
 	fullCmd.Flags().BoolVar(&fullCfg.Debug, "debug", false, "enable debug output")
 	fullCmd.Flags().BoolVar(&fullCfg.NoDefaultRules, "no-default-rules", false, "use only custom rules")
 
-	fullFsCmd.Flags().StringVar(&fullCfg.Engine, "engine", "opengrep", "SAST engine: opengrep, semgrep")
-	fullFsCmd.Flags().StringVar(&fullCfg.RulesPath, "rules", "rules/sast", "path to SAST rules")
-	fullFsCmd.Flags().StringVar(&fullCfg.FailOn, "fail-on", "ERROR", "minimum severity to fail: INFO, WARNING, ERROR")
-	fullFsCmd.Flags().StringVar(&fullCfg.Timeout, "timeout", "10m", "scan timeout")
-	fullFsCmd.Flags().BoolVar(&fullCfg.Debug, "debug", false, "enable debug output")
-	fullFsCmd.Flags().BoolVar(&fullCfg.NoDefaultRules, "no-default-rules", false, "use only custom rules")
-
 	fullCmd.AddCommand(fullFsCmd)
 	rootCmd.AddCommand(fullCmd)
 }
@@ -90,18 +83,32 @@ func runFull(target string) error {
 		log.SetDebug(true)
 	}
 
-	fmt.Print(ui.RenderScanStart(target, "full (trivy + sast)"))
+	clearScreen()
+	fmt.Print(ui.RenderLogo())
+	fmt.Print("\n")
 
-	trivyExitCode := runTrivyPart(target)
+	absTarget, _ := filepath.Abs(target)
+	fmt.Printf("  %s %s\n\n", ui.SummaryLabel.Render("Target:"), absTarget)
 
-	sastExitCode := runSASTPart(target)
+	start := time.Now()
+
+	spinner := ui.NewScanProgress("full", target)
+	spinner.Start()
+
+	trivyRes := runTrivyPart(target, spinner)
+
+	sastRes := runSASTPart(target, spinner)
+
+	spinner.Stop()
+
+	elapsed := time.Since(start)
 
 	finalExitCode := 0
-	if trivyExitCode > 0 || sastExitCode > 0 {
+	if trivyRes.exitCode > 0 || sastRes.exitCode > 0 {
 		finalExitCode = 1
 	}
 
-	printFullSummary(target, trivyExitCode, sastExitCode, finalExitCode)
+	printFullCleanSummary(absTarget, trivyRes, sastRes, elapsed, finalExitCode)
 
 	if finalExitCode > 0 {
 		os.Exit(finalExitCode)
@@ -110,40 +117,82 @@ func runFull(target string) error {
 	return nil
 }
 
-func runTrivyPart(target string) int {
-	cfg.Target = target
-	cfg.Format = config.FormatTable
-	cfg.Scanners = []config.Scanner{config.ScannerVuln, config.ScannerSecret, config.ScannerMisconfig}
-	cfg.Severity = []config.Severity{config.SeverityHigh, config.SeverityCritical}
+type trivyResult struct {
+	exitCode       int
+	vulnCount      int
+	secretCount    int
+	misconfigCount int
+	critical       int
+	high           int
+}
 
-	trivyArgs := trivy.BuildFSArgs(cfg)
+type sastResult struct {
+	exitCode   int
+	total      int
+	errorCount int
+	warnCount  int
+	infoCount  int
+}
+
+func runTrivyPart(target string, spinner *ui.ScanProgress) trivyResult {
+	result := trivyResult{}
 
 	if !trivy.IsInstalled() {
-		log.Warn("Trivy not installed, skipping dependency scan")
-		return 0
+		spinner.SetPhase("Trivy: not installed", 1)
+		return result
 	}
+
+	spinner.SetPhase("Trivy: scanning dependencies...", 1)
+
+	cfg.Target = target
+	cfg.Format = "json"
+	cfg.Scanners = []config.Scanner{config.ScannerVuln, config.ScannerSecret, config.ScannerMisconfig}
+	cfg.Severity = []config.Severity{config.SeverityLow, config.SeverityMedium, config.SeverityHigh, config.SeverityCritical}
+
+	reportPath := trivy.GenerateReportPath(target)
+	trivyArgs := trivy.BuildFSArgs(cfg)
+	trivyArgs = trivy.BuildJSONArgs(trivyArgs, reportPath)
 
 	runner := trivy.NewRunner(fullCfg.Debug)
 	exitCode, err := runner.Run(trivyArgs)
+
+	result.exitCode = exitCode
+
 	if err != nil {
-		log.Warn("Trivy scan error: %v", err)
-		return 0
+		log.Debug("Trivy error: %v", err)
+		return result
 	}
 
-	return exitCode
+	summary, parseErr := trivy.ParseReport(reportPath)
+	if parseErr != nil {
+		log.Debug("Parse error: %v", parseErr)
+		return result
+	}
+
+	result.vulnCount = summary.VulnTotal
+	result.secretCount = summary.SecretTotal
+	result.misconfigCount = summary.MisconfigTotal
+	result.critical = summary.VulnCritical + summary.MisconfigCritical
+	result.high = summary.VulnHigh + summary.MisconfigHigh
+
+	return result
 }
 
-func runSASTPart(target string) int {
+func runSASTPart(target string, spinner *ui.ScanProgress) sastResult {
+	result := sastResult{}
+
 	engine, err := getEngine(fullCfg.Engine)
 	if err != nil {
-		log.Warn("SAST engine error: %v", err)
-		return 0
+		spinner.SetPhase("SAST: engine error", 2)
+		return result
 	}
 
 	if err := engine.CheckInstalled(); err != nil {
-		log.Warn("SAST engine not installed: %v", err)
-		return 0
+		spinner.SetPhase("SAST: not installed", 2)
+		return result
 	}
+
+	spinner.SetPhase("SAST: analyzing code...", 2)
 
 	timeout, err := time.ParseDuration(fullCfg.Timeout)
 	if err != nil {
@@ -152,10 +201,17 @@ func runSASTPart(target string) int {
 
 	failOn := sast.ParseSeverity(fullCfg.FailOn)
 
+	rulesPath := fullCfg.RulesPath
+	if rulesPath != "" {
+		if absPath, err := filepath.Abs(rulesPath); err == nil {
+			rulesPath = absPath
+		}
+	}
+
 	req := sast.ScanRequest{
 		TargetPath:     target,
 		Engine:         fullCfg.Engine,
-		RulesPath:      fullCfg.RulesPath,
+		RulesPath:      rulesPath,
 		Format:         "json",
 		FailOn:         failOn,
 		Timeout:        timeout,
@@ -164,13 +220,27 @@ func runSASTPart(target string) int {
 	}
 
 	runner := sast.NewRunner(fullCfg.Debug)
-	result, err := runner.Run(context.Background(), engine, req)
+	sastRes, err := runner.Run(context.Background(), engine, req)
 	if err != nil {
-		log.Warn("SAST scan error: %v", err)
-		return 0
+		log.Debug("SAST error: %v", err)
+		return result
 	}
 
-	return sast.EvaluatePolicy(result, failOn)
+	result.exitCode = sast.EvaluatePolicy(sastRes, failOn)
+	result.total = len(sastRes.Findings)
+
+	for _, f := range sastRes.Findings {
+		switch f.Severity {
+		case sast.SevError:
+			result.errorCount++
+		case sast.SevWarning:
+			result.warnCount++
+		case sast.SevInfo:
+			result.infoCount++
+		}
+	}
+
+	return result
 }
 
 func getEngine(name string) (sast.Engine, error) {
@@ -184,51 +254,90 @@ func getEngine(name string) (sast.Engine, error) {
 	}
 }
 
-func printFullSummary(target string, trivyExit, sastExit, finalExit int) {
+func printFullCleanSummary(target string, trivyRes trivyResult, sastRes sastResult, elapsed time.Duration, finalExit int) {
 	fmt.Print("\n")
 
 	if finalExit > 0 {
-		fmt.Print(ui.ErrorBig.Render("  ✘ Security issues detected"))
+		fmt.Print(ui.ErrorBig.Render("  ✘ Security issues found"))
 	} else {
 		fmt.Print(ui.SuccessBig.Render("  ✔ No security issues found"))
 	}
 
 	fmt.Print("\n\n")
 
-	boxLines := []string{}
-	boxLines = append(boxLines, ui.SummaryHeader.Render("  Full Scan Summary"))
-	boxLines = append(boxLines, "")
-	boxLines = append(boxLines, fmt.Sprintf("  %s %s", ui.SummaryLabel.Render("Target:"), ui.SummaryValue.Render(truncatePath(target, 50))))
-	boxLines = append(boxLines, "")
-
-	boxLines = append(boxLines, ui.SummaryHeader.Render("  Trivy (Dependencies)"))
-	if trivyExit > 0 {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityCriticalBadge.Render(" ISSUES FOUND ")))
-	} else {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityInfoBadge.Render(" CLEAN ")))
+	trivyLine := "CLEAN"
+	if trivyRes.vulnCount+trivyRes.secretCount+trivyRes.misconfigCount > 0 {
+		trivyLine = fmt.Sprintf("%d findings", trivyRes.vulnCount+trivyRes.secretCount+trivyRes.misconfigCount)
 	}
-	boxLines = append(boxLines, "")
 
-	boxLines = append(boxLines, ui.SummaryHeader.Render("  SAST (Code Analysis)"))
-	if sastExit > 0 {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityCriticalBadge.Render(" ISSUES FOUND ")))
-	} else {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityInfoBadge.Render(" CLEAN ")))
+	sastLine := "CLEAN"
+	if sastRes.total > 0 {
+		sastLine = fmt.Sprintf("%d findings", sastRes.total)
 	}
-	boxLines = append(boxLines, "")
 
+	severityLine := ""
+	if trivyRes.critical > 0 || trivyRes.high > 0 {
+		parts := []string{}
+		if trivyRes.critical > 0 {
+			parts = append(parts, fmt.Sprintf("%d CRITICAL", trivyRes.critical))
+		}
+		if trivyRes.high > 0 {
+			parts = append(parts, fmt.Sprintf("%d HIGH", trivyRes.high))
+		}
+		severityLine = "            " + ui.SeverityCriticalBadge.Render(strings.Join(parts, " ")) + "\n"
+	}
+
+	sastBadgeLine := ""
+	if sastRes.total > 0 {
+		parts := []string{}
+		if sastRes.errorCount > 0 {
+			parts = append(parts, fmt.Sprintf("%d ERROR", sastRes.errorCount))
+		}
+		if sastRes.warnCount > 0 {
+			parts = append(parts, fmt.Sprintf("%d WARNING", sastRes.warnCount))
+		}
+		if len(parts) > 0 {
+			sastBadgeLine = "            " + ui.SeverityCriticalBadge.Render(strings.Join(parts, " ")) + "\n"
+		}
+	}
+
+	pipeline := ui.SeverityInfoBadge.Render(" PIPELINE PASSED ")
 	if finalExit > 0 {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityCriticalBadge.Render(" PIPELINE BLOCKED ")))
-	} else {
-		boxLines = append(boxLines, fmt.Sprintf("  %s", ui.SeverityInfoBadge.Render(" PIPELINE PASSED ")))
+		pipeline = ui.SeverityCriticalBadge.Render(" PIPELINE BLOCKED ")
 	}
-	boxLines = append(boxLines, "")
 
-	content := joinLines(boxLines)
-	fmt.Print(ui.SummaryBox.Render(content))
+	summary := ui.SummaryHeader.Render("  Scan Results") + "\n\n" +
+		fmt.Sprintf("  %-20s %s\n", "Target:", truncatePath(target, 38)) +
+		fmt.Sprintf("  %-20s %s\n", "Duration:", formatDuration(elapsed)) + "\n" +
+		ui.SummaryHeader.Render("  Trivy") + "\n" +
+		fmt.Sprintf("  %-20s %s\n", "Dependencies:", trivyLine) +
+		fmt.Sprintf("  %-20s %s\n", "Secrets:", secretLine(trivyRes.secretCount)) +
+		fmt.Sprintf("  %-20s %s\n", "Misconfigs:", misconfigLine(trivyRes.misconfigCount)) +
+		severityLine + "\n" +
+		ui.SummaryHeader.Render("  SAST") + "\n" +
+		fmt.Sprintf("  %-20s %s\n", "Engine:", fullCfg.Engine) +
+		fmt.Sprintf("  %-20s %s\n", "Findings:", sastLine) +
+		sastBadgeLine + "\n" +
+		"  " + pipeline + "\n"
+
+	fmt.Print(ui.SummaryBox.Render(summary))
 	fmt.Print("\n")
 }
 
-func init() {
-	_ = output.EnsureOutputDir
+func secretLine(count int) string {
+	if count == 0 {
+		return "CLEAN"
+	}
+	return fmt.Sprintf("%d found", count)
+}
+
+func misconfigLine(count int) string {
+	if count == 0 {
+		return "CLEAN"
+	}
+	return fmt.Sprintf("%d found", count)
+}
+
+func clearScreen() {
+	fmt.Print("\033[2J\033[H")
 }

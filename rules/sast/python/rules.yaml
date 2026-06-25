@@ -1,0 +1,234 @@
+rules:
+  - id: python-sql-injection
+    pattern: |
+      $CURSOR.execute("..." + $VAR)
+    message: >
+      SQL Injection: string concatenation in execute().
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: python-sql-injection-format
+    pattern: |
+      $CURSOR.execute("...".format($VAR))
+    message: >
+      SQL Injection: format string in execute().
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: python-sql-injection-fstring
+    pattern: |
+      $CURSOR.execute(f"...{$VAR}...")
+    message: >
+      SQL Injection: f-string in execute().
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: python-command-injection-os-system
+    pattern: |
+      os.system(...)
+    message: >
+      Command Injection: os.system() with potentially user-controlled input.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: python-command-injection-subprocess
+    pattern: |
+      subprocess.call("..." + $VAR, shell=True)
+    message: >
+      Command Injection: subprocess with shell=True and user input.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: python-pickle-deserialization
+    pattern: |
+      pickle.loads(...)
+    message: >
+      Insecure Deserialization: pickle.loads() on untrusted data.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-502"
+          name: "Deserialization of Untrusted Data"
+
+  - id: python-yaml-load
+    pattern: |
+      yaml.load(...)
+    message: >
+      Unsafe YAML: yaml.load() without Loader. Use yaml.safe_load() instead.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-502"
+          name: "Deserialization of Untrusted Data"
+
+  - id: python-path-traversal
+    pattern: |
+      open("..." + $VAR)
+    message: >
+      Path Traversal: user input in file path.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: python-ssrf-requests-get
+    pattern: |
+      requests.get(...)
+    message: >
+      SSRF: potential user-controlled URL in requests.get().
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: python-hardcoded-password
+    pattern: |
+      $VAR = "..."
+    message: >
+      Potential hardcoded password detected.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-798"
+          name: "Use of Hard-coded Credentials"
+
+  - id: python-eval
+    pattern: |
+      eval(...)
+    message: >
+      Dangerous use of eval(). Avoid eval() with dynamic input.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: python-exec
+    pattern: |
+      exec(...)
+    message: >
+      Dangerous use of exec(). Avoid exec() with dynamic input.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: python-crypto-md5
+    pattern: |
+      hashlib.md5(...)
+    message: >
+      Weak cryptography: MD5 is insecure.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: python-crypto-sha1
+    pattern: |
+      hashlib.sha1(...)
+    message: >
+      Weak cryptography: SHA1 is deprecated.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: python-tls-insecure
+    pattern: |
+      verify=False
+    message: >
+      Insecure TLS: certificate verification disabled.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-295"
+          name: "Improper Certificate Validation"
+
+  - id: python-tempfile
+    pattern: |
+      tempfile.mktemp(...)
+    message: >
+      Insecure temporary file: use tempfile.mkstemp() instead.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-377"
+          name: "Insecure Temporary File"
+
+  - id: python-random
+    pattern: |
+      random.random()
+    message: >
+      Weak randomness: random.random() is not cryptographically secure.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-330"
+          name: "Use of Insufficiently Random Values"
+
+  - id: python-xml-etree
+    pattern: |
+      xml.etree.ElementTree.parse(...)
+    message: >
+      XXE: ElementTree may process external entities.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-611"
+          name: "XML External Entity (XXE)"

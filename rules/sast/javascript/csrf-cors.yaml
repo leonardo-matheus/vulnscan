@@ -1,0 +1,42 @@
+rules:
+  - id: js-cors-wildcard-origin
+    pattern: |
+      origin: "*"
+    message: >
+      Overly Permissive CORS: wildcard origin allows any domain to access this resource.
+      Specify explicit trusted origins instead of using a wildcard.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-942"
+          name: "Overly Permissive Cross-domain Whitelist"
+
+  - id: js-cors-reflect-origin
+    pattern: |
+      $RES.setHeader("Access-Control-Allow-Origin", $REQ.headers.origin)
+    message: >
+      Overly Permissive CORS: origin header reflected directly to Access-Control-Allow-Origin.
+      Validate the origin against a whitelist before echoing it back.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-942"
+          name: "Overly Permissive Cross-domain Whitelist"
+
+  - id: js-cors-allow-credentials-wildcard
+    pattern: |
+      $RES.setHeader("Access-Control-Allow-Credentials", "true")
+    message: >
+      CORS with credentials: Access-Control-Allow-Credentials: true must never be combined with
+      a wildcard origin. Ensure Access-Control-Allow-Origin is restricted to trusted domains.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-942"
+          name: "Overly Permissive Cross-domain Whitelist"

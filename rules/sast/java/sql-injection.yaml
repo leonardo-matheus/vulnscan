@@ -3,7 +3,7 @@ rules:
     pattern: |
       $STMT.executeQuery("..." + $VAR)
     message: >
-      SQL Injection detected: string concatenation in executeQuery.
+      SQL Injection: string concatenation in executeQuery.
       Use parameterized queries instead.
     languages: [java]
     severity: ERROR
@@ -17,7 +17,7 @@ rules:
     pattern: |
       $TEMPLATE.query("..." + $VAR, ...)
     message: >
-      SQL Injection detected: string concatenation in JDBC query.
+      SQL Injection: string concatenation in JDBC query.
       Use parameterized queries instead.
     languages: [java]
     severity: ERROR
@@ -31,7 +31,7 @@ rules:
     pattern: |
       $EM.createQuery("..." + $VAR)
     message: >
-      SQL Injection detected: string concatenation in JPA query.
+      SQL Injection: string concatenation in JPA query.
       Use parameterized queries instead.
     languages: [java]
     severity: ERROR
@@ -48,7 +48,7 @@ rules:
       - pattern: |
           $CONN.prepareStatement($SB.toString())
     message: >
-      SQL Injection detected: dynamic query built with StringBuilder.
+      SQL Injection: dynamic query built with StringBuilder.
       Use parameterized queries instead.
     languages: [java]
     severity: ERROR

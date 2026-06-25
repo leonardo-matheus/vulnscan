@@ -13,12 +13,25 @@ rules:
         - id: "CWE-79"
           name: "Cross-site Scripting (XSS)"
 
-  - id: react-dangerously-set-inner-html-jsx
+  - id: react-dangerously-set-inner-html-obj
     pattern: |
       <$TAG dangerouslySetInnerHTML={{ __html: $VAR }} />
     message: >
       XSS risk: dangerouslySetInnerHTML with dynamic value.
       Sanitize $VAR before rendering.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: react-dangerously-set-inner-html-var
+    pattern: |
+      <$TAG dangerouslySetInnerHTML=$OBJ />
+    message: >
+      XSS risk: dangerouslySetInnerHTML with object variable.
     languages: [javascript, typescript]
     severity: ERROR
     metadata:

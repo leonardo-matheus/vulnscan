@@ -1,0 +1,260 @@
+rules:
+  - id: nodejs-sql-injection
+    pattern: |
+      $DB.query("..." + $VAR, ...)
+    message: >
+      SQL Injection: string concatenation in database query.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: nodejs-sql-injection-template
+    pattern: |
+      $DB.query(`...${...}...`, ...)
+    message: >
+      SQL Injection: template literal in database query.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: nodejs-sql-injection-execute
+    pattern: |
+      $CONN.execute("..." + $VAR)
+    message: >
+      SQL Injection: string concatenation in execute().
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: nodejs-command-injection-exec
+    pattern: |
+      exec("..." + $VAR)
+    message: >
+      Command Injection: user input in exec().
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: nodejs-command-injection-execsync
+    pattern: |
+      execSync("..." + $VAR)
+    message: >
+      Command Injection: user input in execSync().
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: nodejs-command-injection-spawn
+    pattern: |
+      spawn("...", [$VAR])
+    message: >
+      Command Injection: user input in spawn arguments.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: nodejs-path-traversal
+    pattern: |
+      fs.readFile("..." + $VAR, ...)
+    message: >
+      Path Traversal: user input in file path.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: nodejs-path-traversal-sync
+    pattern: |
+      fs.readFileSync("..." + $VAR)
+    message: >
+      Path Traversal: user input in file path.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: nodejs-ssrf-fetch
+    pattern: |
+      fetch(...)
+    message: >
+      SSRF: potential user-controlled URL in fetch().
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: nodejs-ssrf-axios
+    pattern: |
+      axios.get(...)
+    message: >
+      SSRF: potential user-controlled URL in axios.get().
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: nodejs-proto-pollution
+    pattern: |
+      $OBJ[$KEY] = $VAL
+    message: >
+      Prototype Pollution: dynamic property assignment.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-1321"
+          name: "Prototype Pollution"
+
+  - id: nodejs-eval
+    pattern: |
+      eval(...)
+    message: >
+      Dangerous use of eval(). Avoid eval() with dynamic input.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: nodejs-new-function
+    pattern: |
+      new Function(...)
+    message: >
+      Dangerous use of new Function(). Avoid constructing functions from strings.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: nodejs-settimeout-string
+    pattern: |
+      setTimeout("...", ...)
+    message: >
+      Avoid passing strings to setTimeout(). Use function references instead.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: nodejs-setinterval-string
+    pattern: |
+      setInterval("...", ...)
+    message: >
+      Avoid passing strings to setInterval(). Use function references instead.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-95"
+          name: "Eval Injection"
+
+  - id: nodejs-crypto-md5
+    pattern: |
+      crypto.createHash("md5")
+    message: >
+      Weak cryptography: MD5 is insecure.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: nodejs-crypto-sha1
+    pattern: |
+      crypto.createHash("sha1")
+    message: >
+      Weak cryptography: SHA1 is deprecated.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: nodejs-tls-reject-unauthorized
+    pattern: |
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+    message: >
+      Insecure TLS: certificate verification disabled globally.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-295"
+          name: "Improper Certificate Validation"
+
+  - id: nodejs-hardcoded-secret
+    pattern: |
+      $VAR = "..."
+    message: >
+      Potential hardcoded secret detected.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-798"
+          name: "Use of Hard-coded Credentials"
+
+  - id: nodejs-nosql-injection
+    pattern: |
+      $COLLECTION.find({ $KEY: $VAR })
+    message: >
+      NoSQL Injection: user input in MongoDB query.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-943"
+          name: "NoSQL Injection"

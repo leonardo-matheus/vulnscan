@@ -1,0 +1,42 @@
+rules:
+  - id: java-insecure-cookie-httponly-false
+    pattern: |
+      $COOKIE.setHttpOnly(false)
+    message: >
+      Insecure Cookie: HttpOnly flag explicitly set to false.
+      Set HttpOnly to true to prevent JavaScript from accessing session cookies.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-1004"
+          name: "Sensitive Cookie Without 'HttpOnly' Flag"
+
+  - id: java-insecure-cookie-secure-false
+    pattern: |
+      $COOKIE.setSecure(false)
+    message: >
+      Insecure Cookie: Secure flag explicitly set to false.
+      Set Secure to true to prevent cookie transmission over unencrypted HTTP connections.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-614"
+          name: "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+
+  - id: java-insecure-cookie-samesite-none
+    pattern: |
+      $COOKIE.setAttribute("SameSite", "None")
+    message: >
+      Insecure Cookie: SameSite=None without the Secure flag exposes the cookie to CSRF attacks.
+      Use SameSite=Strict or SameSite=Lax unless cross-site access is explicitly required.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-352"
+          name: "Cross-Site Request Forgery (CSRF)"

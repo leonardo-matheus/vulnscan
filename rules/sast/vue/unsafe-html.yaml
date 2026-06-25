@@ -1,10 +1,11 @@
 rules:
-  - id: vue-unsafe-html
+  - id: vue-unsafe-html-directive
     pattern: |
-      v-html="..."
+      v-html="$VAR"
     message: >
-      XSS risk: v-html directive renders raw HTML. Sanitize input before using v-html.
-    languages: [html, vue]
+      XSS risk: v-html directive renders raw HTML.
+      Sanitize input before using v-html.
+    languages: [html, vue, javascript, typescript]
     severity: ERROR
     metadata:
       category: security
@@ -12,12 +13,26 @@ rules:
         - id: "CWE-79"
           name: "Cross-site Scripting (XSS)"
 
-  - id: vue-unsafe-html-dynamic
+  - id: vue-unsafe-html-binding
     pattern: |
-      v-html="$VAR"
+      v-html="..."
     message: >
-      XSS risk: v-html with dynamic value. Sanitize input before rendering.
-    languages: [html, vue]
+      XSS risk: v-html with static value.
+    languages: [html, vue, javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: vue-unsafe-html-interpolation
+    pattern: |
+      v-html="$EXPR"
+    message: >
+      XSS risk: v-html with expression.
+      Sanitize $EXPR before rendering.
+    languages: [html, vue, javascript, typescript]
     severity: ERROR
     metadata:
       category: security

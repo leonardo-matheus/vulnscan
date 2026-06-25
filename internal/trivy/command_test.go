@@ -19,11 +19,22 @@ func TestBuildFSArgs_DefaultOptions(t *testing.T) {
 		"--exit-code", "1",
 		"--format", "table",
 		"--timeout", "10m",
+		"--skip-dirs", "node_modules",
+		"--skip-dirs", "vendor",
+		"--skip-dirs", "target",
+		"--skip-dirs", "build",
+		"--skip-dirs", ".git",
+		"--skip-dirs", ".svn",
+		"--skip-dirs", ".hg",
+		"--skip-dirs", "dist",
+		"--skip-dirs", "__pycache__",
+		"--skip-dirs", ".venv",
+		"--skip-dirs", "venv",
 		"/path/to/project",
 	}
 
 	if len(args) != len(expected) {
-		t.Fatalf("expected %d args, got %d: %v", len(expected), len(args), args)
+		t.Fatalf("expected %d args, got %d", len(expected), len(args))
 	}
 
 	for i, arg := range args {

@@ -1,0 +1,117 @@
+rules:
+  - id: java-path-traversal
+    pattern: |
+      new File($REQ.getParameter(...))
+    message: >
+      Path Traversal: user input used in File constructor without sanitization.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: java-path-traversal-string
+    pattern: |
+      new File("..." + $REQ.getParameter(...))
+    message: >
+      Path Traversal: concatenation with user input in File path.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: java-ssrf
+    pattern: |
+      new URL($REQ.getParameter(...)).openConnection()
+    message: >
+      SSRF: user-controlled URL used to open connection.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: java-deserialization
+    pattern: |
+      $OIS.readObject()
+    message: >
+      Insecure Deserialization: readObject() on untrusted data.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-502"
+          name: "Deserialization of Untrusted Data"
+
+  - id: java-xxe-documentbuilder
+    pattern: |
+      DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(...)
+    message: >
+      XXE: DocumentBuilder may process external entities.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-611"
+          name: "XML External Entity (XXE)"
+
+  - id: java-ldap-injection
+    pattern: |
+      $CTX.search("..." + $VAR, ...)
+    message: >
+      LDAP Injection: string concatenation in LDAP search.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-90"
+          name: "LDAP Injection"
+
+  - id: java-hardcoded-password
+    pattern: |
+      $TYPE $VAR = "..."
+    message: >
+      Hardcoded password detected.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-798"
+          name: "Use of Hard-coded Credentials"
+
+  - id: java-command-injection
+    pattern: |
+      Runtime.getRuntime().exec(...)
+    message: >
+      Command Injection: Runtime.exec() with potentially user-controlled input.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: java-command-processbuilder
+    pattern: |
+      new ProcessBuilder(...).start()
+    message: >
+      Command Injection: ProcessBuilder with potentially user-controlled input.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"

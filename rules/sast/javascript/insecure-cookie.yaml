@@ -1,0 +1,56 @@
+rules:
+  - id: js-insecure-cookie-no-httponly
+    pattern: |
+      $RES.cookie($NAME, $VAL, {...})
+    message: >
+      Insecure Cookie: verify that httpOnly: true is set.
+      Missing httpOnly flag allows JavaScript to access the cookie, enabling XSS-based session theft.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-1004"
+          name: "Sensitive Cookie Without 'HttpOnly' Flag"
+
+  - id: js-insecure-cookie-httponly-false
+    pattern: |
+      $RES.cookie($NAME, $VAL, {httpOnly: false})
+    message: >
+      Insecure Cookie: httpOnly is explicitly set to false.
+      Set httpOnly: true to prevent JavaScript from accessing session cookies.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-1004"
+          name: "Sensitive Cookie Without 'HttpOnly' Flag"
+
+  - id: js-insecure-cookie-secure-false
+    pattern: |
+      $RES.cookie($NAME, $VAL, {secure: false})
+    message: >
+      Insecure Cookie: secure flag is explicitly set to false.
+      Set secure: true to prevent cookie transmission over unencrypted HTTP connections.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-614"
+          name: "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+
+  - id: js-insecure-cookie-samesite-none
+    pattern: |
+      $RES.cookie($NAME, $VAL, {sameSite: "None"})
+    message: >
+      Insecure Cookie: SameSite=None without the Secure flag exposes the cookie to CSRF attacks.
+      Use sameSite: "Strict" or "Lax" unless cross-site access is explicitly required.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-352"
+          name: "Cross-Site Request Forgery (CSRF)"

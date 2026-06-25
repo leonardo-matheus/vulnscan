@@ -1,0 +1,156 @@
+rules:
+  - id: go-sql-injection
+    pattern: |
+      $DB.Query("..." + $VAR)
+    message: >
+      SQL Injection: string concatenation in database query.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: go-sql-injection-sprintf
+    pattern: |
+      $DB.Query(fmt.Sprintf("...", $VAR))
+    message: >
+      SQL Injection: Sprintf in database query.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: go-command-injection
+    pattern: |
+      exec.Command("...", $VAR)
+    message: >
+      Command Injection: user input in exec.Command.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-78"
+          name: "OS Command Injection"
+
+  - id: go-path-traversal
+    pattern: |
+      os.Open("..." + $VAR)
+    message: >
+      Path Traversal: user input in file path.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: go-path-traversal-io-readfile
+    pattern: |
+      os.ReadFile("..." + $VAR)
+    message: >
+      Path Traversal: user input in file read.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-22"
+          name: "Path Traversal"
+
+  - id: go-ssrf-http-get
+    pattern: |
+      http.Get($VAR)
+    message: >
+      SSRF: user-controlled URL in HTTP GET request.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: go-ssrf-http-get-url
+    pattern: |
+      http.Get(fmt.Sprintf("...", $VAR))
+    message: >
+      SSRF: user-controlled URL in HTTP GET request.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-918"
+          name: "Server-Side Request Forgery"
+
+  - id: go-hardcoded-secret
+    pattern: |
+      $VAR := "..."
+    message: >
+      Potential hardcoded secret detected.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-798"
+          name: "Use of Hard-coded Credentials"
+
+  - id: go-unsafe-sql
+    pattern: |
+      $DB.Exec("..." + $VAR)
+    message: >
+      SQL Injection: string concatenation in Exec.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-89"
+          name: "SQL Injection"
+
+  - id: go-crypto-md5
+    pattern: |
+      crypto/md5
+    message: >
+      Weak cryptography: MD5 is insecure.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: go-crypto-sha1
+    pattern: |
+      crypto/sha1
+    message: >
+      Weak cryptography: SHA1 is deprecated.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-328"
+          name: "Use of Weak Hash"
+
+  - id: go-tls-insecure
+    pattern: |
+      InsecureSkipVerify: true
+    message: >
+      Insecure TLS: certificate verification disabled.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-295"
+          name: "Improper Certificate Validation"

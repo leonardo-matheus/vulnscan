@@ -1,0 +1,42 @@
+rules:
+  - id: java-open-redirect-send-redirect
+    pattern: |
+      $RESPONSE.sendRedirect($VAR)
+    message: >
+      Open Redirect: user-controlled URL passed to sendRedirect().
+      Validate and whitelist redirect destinations before redirecting.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"
+
+  - id: java-open-redirect-spring-return
+    pattern: |
+      return "redirect:" + $VAR
+    message: >
+      Open Redirect: user-controlled value in Spring MVC redirect return string.
+      Validate and whitelist redirect destinations before redirecting.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"
+
+  - id: java-open-redirect-location-header
+    pattern: |
+      $RESPONSE.setHeader("Location", $VAR)
+    message: >
+      Open Redirect: user-controlled value set in Location header.
+      Validate and whitelist redirect destinations before setting the header.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-601"
+          name: "URL Redirection to Untrusted Site (Open Redirect)"

@@ -1,0 +1,112 @@
+rules:
+  - id: js-xss-inner-html
+    pattern: |
+      $EL.innerHTML = $VAR
+    message: >
+      XSS: user-controlled value assigned to innerHTML.
+      Use textContent or a sanitization library (e.g. DOMPurify) before assigning to innerHTML.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-outer-html
+    pattern: |
+      $EL.outerHTML = $VAR
+    message: >
+      XSS: user-controlled value assigned to outerHTML.
+      Use textContent or a sanitization library (e.g. DOMPurify) before assigning to outerHTML.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-document-write
+    pattern: |
+      document.write($VAR)
+    message: >
+      XSS: user-controlled value in document.write().
+      Avoid document.write(); use safe DOM manipulation methods instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-document-writeln
+    pattern: |
+      document.writeln($VAR)
+    message: >
+      XSS: user-controlled value in document.writeln().
+      Avoid document.writeln(); use safe DOM manipulation methods instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-insert-adjacent-html
+    pattern: |
+      $EL.insertAdjacentHTML($POS, $VAR)
+    message: >
+      XSS: user-controlled value in insertAdjacentHTML().
+      Sanitize input with DOMPurify or use insertAdjacentText() for plain text.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-jquery-html
+    pattern: |
+      $EL.html($VAR)
+    message: >
+      XSS: user-controlled value in jQuery .html().
+      Use .text() for plain text or sanitize with DOMPurify before calling .html().
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-express-res-send
+    pattern: |
+      $RES.send("..." + $VAR)
+    message: >
+      XSS: user input concatenated into HTML response in Express.
+      Encode output or use a template engine with auto-escaping (e.g. Handlebars, EJS with <%=).
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
+
+  - id: js-xss-express-res-send-template
+    pattern: |
+      $RES.send(`...${$VAR}...`)
+    message: >
+      XSS: user input in template literal passed to res.send().
+      Encode output or use a template engine with auto-escaping (e.g. Handlebars, EJS with <%=).
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe:
+        - id: "CWE-79"
+          name: "Cross-site Scripting (XSS)"
